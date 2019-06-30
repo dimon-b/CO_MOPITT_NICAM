@@ -1,0 +1,184 @@
+# -*- coding: utf-8 -*-
+"""
+Created on 30/06/2019 22:03
+Project    CO
+@author:   Dmitry
+    Compare CO data
+"""
+import pandas as pd
+import datetime
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+
+os.environ["PROJ_LIB"] = "C:/Users/admin/Anaconda3/Library/share"  # epsg file should be
+from mpl_toolkits.basemap import Basemap
+import h5py
+import calendar
+
+import a_checkdir
+import a_saveplot
+
+
+
+# === main class
+class ProcMopitt():
+
+    # --- init
+    def __init__(self, case, years):
+        # --- path
+        self.inp_dir = case.inp_dir
+        self.mid_dir = case.mid_dir
+        self.plt_dir = case.plt_dir
+
+        # --- calendar
+        self.years = years
+        self.months = case.months
+
+        # --- 2d map for Japan
+        self.map_lims = [26, 46, 126, 146, 4, 4]
+        # --- 2d map for Krasnoyarsk
+        self.map_lims = [40, 70, 70, 110, 10, 10]
+
+
+    # --- main processing
+    def process(self, ifplot=False, info=False):
+
+        # --- datarange for 2 dates
+        def daterange(start_date, end_date):
+            for n in range(int((end_date - start_date).days)):
+                yield start_date + datetime.timedelta(n)
+
+
+        # --- years and month
+        for yr in range(self.years[0], self.years[1], 1):
+            frames = []
+            for mn in range(0, len(self.months), 14):
+
+                # --- loop dates
+                dt_st = datetime.datetime(yr, mn + 1, 1, 0, 0)
+                dt_en = dt_st + datetime.timedelta(days=calendar.monthrange(yr, mn + 1)[1])
+                dt_en = datetime.datetime(yr, mn + 1, 10, 0, 0)
+                for single_date in daterange(dt_st, dt_en):
+
+                    # --- dates
+                    cdate = str(single_date.strftime("%Y%m%d"))
+                    print(f'\tRead MOPITT for:', cdate)
+
+                    # --- read file
+                    fname = self.inp_dir + 'MOP02J-' + cdate + '-L2V16.2.3.he5'
+                    h5_var, h5_lat, h5_lon = self.h5_read(fname)
+
+                    # --- df
+                    frames.append(self.make_1d_df(h5_var, h5_lat, h5_lon, single_date))
+
+                    # --- if plot
+                    if ifplot:
+                        pname = self.plt_dir + 'MOPITT_' + cdate
+                        self.plot_map(h5_var, h5_lat, h5_lon, pname, cdate)
+
+                    # --- get file info
+                    if info:
+                        self.h5_info(fname)
+
+            df = pd.concat(frames)
+            pkf = self.mid_dir + 'MOPITTS-df/' + 'MOPITT_CO_' + cdate[:-2]
+            a_checkdir.check_dir(pkf)
+            df.to_pickle(pkf)
+
+    # === make df
+    def make_1d_df(self, h5_var, h5_lat, h5_lon, single_date):
+
+        # --- df, ch4 in ppm
+        df = pd.DataFrame({'index': [single_date]*len(h5_var), 'CO, ppm': h5_var, 'Lat': h5_lat, 'Lon': h5_lon})
+        print('\t\tdf len:', len(df.index))
+        #print(df.head())
+
+        return df
+
+        # # --- to pickle
+        # pkf = self.mid_dir + 'MOPITTS-df/' + 'mpt_co'
+        # a_checkdir.check_dir(pkf)
+        # df.to_pickle(pkf)
+        # exit()
+
+
+    # --- read h5 file
+    def h5_read(self, fname):
+        with h5py.File(fname, mode='r') as fh5:
+            # --- get var
+            name = '/HDFEOS/SWATHS/MOP02/Data Fields/RetrievedCOTotalColumn'
+            h5_var = fh5[name][:, 0]
+
+            # --- units attribute is an array of string.
+            fillvalue = fh5[name].attrs['_FillValue']
+
+            h5_var[h5_var == fillvalue] = np.nan
+
+            # --- get the geolocation data
+            h5_lat = fh5['/HDFEOS/SWATHS/MOP02/Geolocation Fields/Latitude'][:]
+            h5_lon = fh5['/HDFEOS/SWATHS/MOP02/Geolocation Fields/Longitude'][:]
+
+        return h5_var, h5_lat, h5_lon
+
+
+    # === plot map
+    def plot_map(self, var1d, lats, lons, pname, cdate, title=False):
+        # --- Build Map ---
+        fig = plt.figure()
+        plt.rc('font', family='serif')
+        my_cmap = plt.get_cmap('jet')
+        font_size = 10
+
+        # --- limits
+        map_lims = self.map_lims
+
+        # --- map labels ---
+        mp = Basemap(llcrnrlat=map_lims[0], urcrnrlat=map_lims[1],
+                     llcrnrlon=map_lims[2], urcrnrlon=map_lims[3], projection='cyl', resolution='l')
+        mp.drawcoastlines(color='grey')
+        mp.drawcountries(color='grey')
+        mp.drawparallels(np.arange(-90, 91, map_lims[4]), labels=[True, False, True, False],
+                         fontsize=font_size, color='grey')
+        mp.drawmeridians(np.arange(0, 360, map_lims[5]), labels=[False, True, False, True],
+                         fontsize=font_size, color='grey')
+
+        sc = mp.scatter(lons, lats, c=var1d, s=10, cmap=my_cmap, edgecolors=None, linewidth=0)
+        cb = mp.colorbar()
+
+        # --- title
+        if title:
+            plt.title(title + ' for ' + cdate)
+
+        # --- save to plot
+        a_saveplot.save_plot(pname, ext="png", close=True, verbose=False)
+        plt.show()
+
+
+    # --- read file info
+    def h5_info(self, fname):
+        # --- check file structure
+        def traverse_datasets(hdf_file):
+            def h5py_dataset_iterator(g, prefix=''):
+                for key in g.keys():
+                    item = g[key]
+                    path = f'{prefix}/{key}'
+                    if isinstance(item, h5py.Dataset):  # test for dataset
+                        yield (path, item)
+                    elif isinstance(item, h5py.Group):  # test for group (go down)
+                        yield from h5py_dataset_iterator(item, path)
+
+
+            with h5py.File(hdf_file, 'r') as f:
+                for path, _ in h5py_dataset_iterator(f):
+                    yield path
+
+
+        # --- open
+        f = h5py.File(fname, 'r')
+
+        # --- read structure
+        for dset in traverse_datasets(fname):
+            print('Path:', dset)
+            print('Shape:', f[dset].shape)
+            print('Data type:', f[dset].dtype)
