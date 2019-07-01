@@ -16,9 +16,9 @@ class SetCase():
     def __init__(self):
         # --- path
         self.path = '../'
-        self.inp_dir = self.path + 'inp_data/'
+        self.mpt_r_dir = self.path + 'inp_data/'
+        self.mpt_m_dir = self.path + 'mid_dir/MOPITT-df/'
         self.out_dir = self.path + 'out_data/'
-        self.mid_dir = self.path + 'mid_dir/'
         self.plt_dir = self.path + 'plots/'
 
         # --- calendar

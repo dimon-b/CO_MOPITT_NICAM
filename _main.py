@@ -25,8 +25,8 @@ if __name__ == '__main__':
     print(f'\nProcess MOPITT')
     years = [2015, 2016]
     obj = prc_MOPITT.ProcMopitt(case, years)
-    #obj.proc_raw()
-    obj.proc_df()
+    obj.proc_raw()
+    #obj.proc_df()
 
 
     # --- time end
