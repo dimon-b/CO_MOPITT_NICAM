@@ -18,7 +18,7 @@ import calendar
 
 import a_checkdir
 import a_saveplot
-
+import plt_timser
 
 
 # === main class
@@ -39,10 +39,54 @@ class ProcMopitt():
         self.map_lims = [26, 46, 126, 146, 4, 4]
         # --- 2d map for Krasnoyarsk
         self.map_lims = [40, 70, 70, 110, 10, 10]
+        # --- Krasnoyarsk locations
+        self.krs_coor = [56, 92.5]
+        # --- no Krasnoyarsk locations
+        self.nrs_coor = [60, 92.5]
+
+        # ---
+        self.pnt_lim = 2
 
 
     # --- main processing
-    def process(self, ifplot=False, info=False):
+    def proc_df(self, ifplot=False, info=False):
+
+        # --- years and month
+        for yr in range(self.years[0], self.years[1], 1):
+            for mn in range(0, len(self.months), 14):
+                # --- loop dates
+                sdate = datetime.datetime(yr, mn + 1, 1, 0, 0)
+                cdate = str(sdate.strftime("%Y%m"))
+
+                pkf = self.mid_dir + 'MOPITTS-df/' + 'MOPITT_CO_' + cdate
+                df = pd.read_pickle(pkf)
+
+                # for id in range(0, len(df.index))
+                min_lt = self.krs_coor[0] - self.pnt_lim/2.
+                max_lt = self.krs_coor[0] + self.pnt_lim/2.
+                min_ln = self.krs_coor[1] - self.pnt_lim/2.
+                max_ln = self.krs_coor[1] + self.pnt_lim/2.
+
+                # --- cat regions
+                df_kr = df[(df['lat'] >= min_lt) & (df['lat'] <= max_lt) &
+                           (df['Lon'] >= min_ln) & (df['lon'] <= max_ln)]
+
+                min_lt = self.nrs_coor[0] - self.pnt_lim/2.
+                max_lt = self.nrs_coor[0] + self.pnt_lim/2.
+                min_ln = self.nrs_coor[1] - self.pnt_lim/2.
+                max_ln = self.nrs_coor[1] + self.pnt_lim/2.
+
+                # --- cat regions
+                df_nk = df[(df['lat'] >= min_lt) & (df['lat'] <= max_lt) &
+                           (df['lon'] >= min_ln) & (df['lon'] <= max_ln)]
+
+                # --- plot
+                f_name = self.plt_dir + 'CO_' + cdate
+                plt_timser.plot_ts([df_kr, df_nk], ['b', 'r'], ['Krs', 'Not'], [], f_name)
+
+
+    # --- main processing
+    def proc_raw(self, ifplot=False, info=False):
 
         # --- datarange for 2 dates
         def daterange(start_date, end_date):
@@ -58,7 +102,7 @@ class ProcMopitt():
                 # --- loop dates
                 dt_st = datetime.datetime(yr, mn + 1, 1, 0, 0)
                 dt_en = dt_st + datetime.timedelta(days=calendar.monthrange(yr, mn + 1)[1])
-                dt_en = datetime.datetime(yr, mn + 1, 10, 0, 0)
+                # dt_en = datetime.datetime(yr, mn + 1, 10, 0, 0)
                 for single_date in daterange(dt_st, dt_en):
 
                     # --- dates
@@ -82,17 +126,19 @@ class ProcMopitt():
                         self.h5_info(fname)
 
             df = pd.concat(frames)
+            df.set_index('index', inplace=True)
             pkf = self.mid_dir + 'MOPITTS-df/' + 'MOPITT_CO_' + cdate[:-2]
             a_checkdir.check_dir(pkf)
             df.to_pickle(pkf)
+
 
     # === make df
     def make_1d_df(self, h5_var, h5_lat, h5_lon, single_date):
 
         # --- df, ch4 in ppm
-        df = pd.DataFrame({'index': [single_date]*len(h5_var), 'CO, ppm': h5_var, 'Lat': h5_lat, 'Lon': h5_lon})
+        df = pd.DataFrame({'index': [single_date]*len(h5_var), 'CO, ppm': h5_var, 'lat': h5_lat, 'lon': h5_lon})
         print('\t\tdf len:', len(df.index))
-        #print(df.head())
+        # print(df.head())
 
         return df
 
@@ -116,7 +162,7 @@ class ProcMopitt():
             h5_var[h5_var == fillvalue] = np.nan
 
             # --- get the geolocation data
-            h5_lat = fh5['/HDFEOS/SWATHS/MOP02/Geolocation Fields/Latitude'][:]
+            h5_lat = fh5['/HDFEOS/SWATHS/MOP02/Geolocation Fields/latitude'][:]
             h5_lon = fh5['/HDFEOS/SWATHS/MOP02/Geolocation Fields/Longitude'][:]
 
         return h5_var, h5_lat, h5_lon
