@@ -10,8 +10,7 @@ import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-
-os.environ["PROJ_LIB"] = "C:/Users/admin/Anaconda3/Library/share"  # epsg file should be
+os.environ["PROJ_LIB"] = "/home/dmitry/anaconda3/share/proj/"  # epsg file should be
 from mpl_toolkits.basemap import Basemap
 import h5py
 import calendar
@@ -27,7 +26,9 @@ class ProcMopitt():
     # --- init
     def __init__(self, case, years):
         # --- path
-        self.inp_dir = case.inp_dir
+        self.mpt_r_dir = case.mpt_r_dir
+        self.mpt_m_dir = case.mpt_m_dir
+        #self.inp_dir = case.inp_dir
         self.mid_dir = case.mid_dir
         self.plt_dir = case.plt_dir
 
@@ -58,7 +59,7 @@ class ProcMopitt():
                 # --- loop dates
                 dt_st = datetime.datetime(yr, mn + 1, 1, 0, 0)
                 dt_en = dt_st + datetime.timedelta(days=calendar.monthrange(yr, mn + 1)[1])
-                dt_en = datetime.datetime(yr, mn + 1, 10, 0, 0)
+                #dt_en = datetime.datetime(yr, mn + 1, 10, 0, 0)
                 for single_date in daterange(dt_st, dt_en):
 
                     # --- dates
@@ -66,7 +67,7 @@ class ProcMopitt():
                     print(f'\tRead MOPITT for:', cdate)
 
                     # --- read file
-                    fname = self.inp_dir + 'MOP02J-' + cdate + '-L2V16.2.3.he5'
+                    fname = self.mpt_r_dir + cdate[:4] + '/' + 'MOP02J-' + cdate + '-L2V16.2.3.he5'
                     h5_var, h5_lat, h5_lon = self.h5_read(fname)
 
                     # --- df
@@ -82,7 +83,7 @@ class ProcMopitt():
                         self.h5_info(fname)
 
             df = pd.concat(frames)
-            pkf = self.mid_dir + 'MOPITTS-df/' + 'MOPITT_CO_' + cdate[:-2]
+            pkf = self.mpt_m_dir + 'MOPITT_CO_' + cdate[:-2]
             a_checkdir.check_dir(pkf)
             df.to_pickle(pkf)
 
