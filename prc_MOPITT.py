@@ -14,6 +14,7 @@ os.environ["PROJ_LIB"] = "/home/dmitry/anaconda3/share/proj/"  # epsg file shoul
 from mpl_toolkits.basemap import Basemap
 import h5py
 import calendar
+import math
 
 import a_checkdir
 import a_saveplot
@@ -28,8 +29,6 @@ class ProcMopitt():
         # --- path
         self.mpt_r_dir = case.mpt_r_dir
         self.mpt_m_dir = case.mpt_m_dir
-        #self.inp_dir = case.inp_dir
-        self.mid_dir = case.mid_dir
         self.plt_dir = case.plt_dir
 
         # --- calendar
@@ -43,14 +42,17 @@ class ProcMopitt():
         # --- Krasnoyarsk locations
         self.krs_coor = [56, 92.5]
         # --- no Krasnoyarsk locations
-        self.nrs_coor = [60, 92.5]
+        self.nrs_coor = [66, 92.5]
 
         # ---
-        self.pnt_lim = 2
+        self.pnt_lim = 1
 
 
     # --- main processing
     def proc_df(self, ifplot=False, info=False):
+
+        rsm_time = 'm'
+        frames = []
 
         # --- years and month
         for yr in range(self.years[0], self.years[1], 1):
@@ -59,31 +61,44 @@ class ProcMopitt():
                 sdate = datetime.datetime(yr, mn + 1, 1, 0, 0)
                 cdate = str(sdate.strftime("%Y%m"))
 
-                pkf = self.mid_dir + 'MOPITT-df/' + 'MOPITT_CO_' + cdate
-                df = pd.read_pickle(pkf)
+                pkf = self.mpt_m_dir + 'MOPITT_CO_' + cdate
+                try:
+                    df = pd.read_pickle(pkf)
+                except IOError:
+                    print("\t\tCould not read file:", pkf)
+                    exit()
+                frames.append(df)
 
-                # for id in range(0, len(df.index))
-                min_lt = self.krs_coor[0] - self.pnt_lim/2.
-                max_lt = self.krs_coor[0] + self.pnt_lim/2.
-                min_ln = self.krs_coor[1] - self.pnt_lim/2.
-                max_ln = self.krs_coor[1] + self.pnt_lim/2.
+        df = pd.concat(frames)
 
-                # --- cat regions
-                df_kr = df[(df['lat'] >= min_lt) & (df['lat'] <= max_lt) &
-                           (df['Lon'] >= min_ln) & (df['lon'] <= max_ln)]
+        min_lt = self.krs_coor[0] - self.pnt_lim/2.
+        max_lt = self.krs_coor[0] + self.pnt_lim/2.
+        min_ln = self.krs_coor[1] - self.pnt_lim/2.
+        max_ln = self.krs_coor[1] + self.pnt_lim/2.
 
-                min_lt = self.nrs_coor[0] - self.pnt_lim/2.
-                max_lt = self.nrs_coor[0] + self.pnt_lim/2.
-                min_ln = self.nrs_coor[1] - self.pnt_lim/2.
-                max_ln = self.nrs_coor[1] + self.pnt_lim/2.
+        # --- cat regions
+        df_kr = df[(df['lat'] >= min_lt) & (df['lat'] <= max_lt) &
+                   (df['lon'] >= min_ln) & (df['lon'] <= max_ln)]
+        df_kr = df_kr.resample(rsm_time).mean()
+        pds_kr = pd.Series(df_kr['CO, ppm'].values, index=df_kr.index)
 
-                # --- cat regions
-                df_nk = df[(df['lat'] >= min_lt) & (df['lat'] <= max_lt) &
-                           (df['lon'] >= min_ln) & (df['lon'] <= max_ln)]
+        min_lt = self.nrs_coor[0] - self.pnt_lim/2.
+        max_lt = self.nrs_coor[0] + self.pnt_lim/2.
+        min_ln = self.nrs_coor[1] - self.pnt_lim/2.
+        max_ln = self.nrs_coor[1] + self.pnt_lim/2.
 
-                # --- plot
-                f_name = self.plt_dir + 'CO_' + cdate
-                plt_timser.plot_ts([df_kr, df_nk], ['b', 'r'], ['Krs', 'Not'], [], f_name)
+        # --- cat regions
+        df_nk = df[(df['lat'] >= min_lt) & (df['lat'] <= max_lt) &
+                   (df['lon'] >= min_ln) & (df['lon'] <= max_ln)]
+        df_nk = df_nk.resample(rsm_time).mean()
+        pds_nk = pd.Series(df_nk['CO, ppm'].values, index=df_nk.index)
+
+        # --- dif
+        pds_dif = pd.Series(df_kr['CO, ppm'].values - df_nk['CO, ppm'].values, index=df_nk.index)
+
+        # --- plot
+        f_name = self.plt_dir + 'CO_' + cdate
+        plt_timser.plot_ts([pds_kr, pds_nk], pds_dif, ['r', 'k'], ['Krs', 'Not'], [], f_name)
 
 
     # --- main processing
@@ -97,8 +112,8 @@ class ProcMopitt():
 
         # --- years and month
         for yr in range(self.years[0], self.years[1], 1):
-            frames = []
-            for mn in range(2, len(self.months), 1):
+            for mn in range(1, len(self.months), 13):
+                frames = []
 
                 # --- loop dates
                 dt_st = datetime.datetime(yr, mn + 1, 1, 0, 0)
@@ -110,27 +125,31 @@ class ProcMopitt():
                     cdate = str(single_date.strftime("%Y%m%d"))
                     print(f'\tRead MOPITT for:', cdate)
 
-                    # --- read file
                     fname = self.mpt_r_dir + cdate[:4] + '/' + 'MOP02J-' + cdate + '-L2V16.2.3.he5'
-                    h5_var, h5_lat, h5_lon = self.h5_read(fname)
 
-                    # --- df
-                    frames.append(self.make_1d_df(h5_var, h5_lat, h5_lon, single_date))
+                    try:
+                        h5_var, h5_lat, h5_lon = self.h5_read(fname)
 
-                    # --- if plot
-                    if ifplot:
-                        pname = self.plt_dir + 'MOPITT_' + cdate
-                        self.plot_map(h5_var, h5_lat, h5_lon, pname, cdate)
+                        # --- df
+                        frames.append(self.make_1d_df(h5_var, h5_lat, h5_lon, single_date))
 
-                    # --- get file info
-                    if info:
-                        self.h5_info(fname)
+                        # --- if plot
+                        if ifplot:
+                            pname = self.plt_dir + 'MOPITT_' + cdate
+                            self.plot_map(h5_var, h5_lat, h5_lon, pname, cdate)
 
-            df = pd.concat(frames)
-            df.set_index('index', inplace=True)
-            pkf = self.mid_dir + 'MOPITT-df/' + 'MOPITT_CO_' + cdate[:-2]
-            a_checkdir.check_dir(pkf)
-            df.to_pickle(pkf)
+                        # --- get file info
+                        if info:
+                            self.h5_info(fname)
+
+                    except IOError:
+                        print("\t\tCould not read file:", fname)
+
+                df = pd.concat(frames)
+                df.set_index('index', inplace=True)
+                pkf = self.mpt_m_dir + 'MOPITT_CO_' + cdate[:-2]
+                a_checkdir.check_dir(pkf)
+                df.to_pickle(pkf)
 
 
     # === make df
@@ -153,24 +172,21 @@ class ProcMopitt():
     # --- read h5 file
     def h5_read(self, fname):
 
-        try:
-            with h5py.File(fname, mode='r') as fh5:
-                # --- get var
-                name = '/HDFEOS/SWATHS/MOP02/Data Fields/RetrievedCOTotalColumn'
-                h5_var = fh5[name][:, 0]
+        with h5py.File(fname, mode='r') as fh5:
+            # --- get var
+            name = '/HDFEOS/SWATHS/MOP02/Data Fields/RetrievedCOTotalColumn'
+            h5_var = fh5[name][:, 0]
 
-                # --- units attribute is an array of string.
-                fillvalue = fh5[name].attrs['_FillValue']
+            # --- units attribute is an array of string.
+            fillvalue = fh5[name].attrs['_FillValue']
 
-                h5_var[h5_var == fillvalue] = np.nan
+            h5_var[h5_var == fillvalue] = np.nan
 
-                # --- get the geolocation data
-                h5_lat = fh5['/HDFEOS/SWATHS/MOP02/Geolocation Fields/Latitude'][:]
-                h5_lon = fh5['/HDFEOS/SWATHS/MOP02/Geolocation Fields/Longitude'][:]
-        except IOError:
-            print("\t\tCould not read file:", fname)
+            # --- get the geolocation data
+            h5_lat = fh5['/HDFEOS/SWATHS/MOP02/Geolocation Fields/Latitude'][:]
+            h5_lon = fh5['/HDFEOS/SWATHS/MOP02/Geolocation Fields/Longitude'][:]
 
-        return h5_var, h5_lat, h5_lon
+            return h5_var, h5_lat, h5_lon
 
 
     # === plot map
