@@ -14,12 +14,9 @@ os.environ["PROJ_LIB"] = "/home/dmitry/anaconda3/share/proj/"  # epsg file shoul
 from mpl_toolkits.basemap import Basemap
 import h5py
 import calendar
-import math
 
 import a_checkdir
 import a_saveplot
-import a_setcolors
-import plt_timser
 
 
 # === main class
@@ -40,6 +37,7 @@ class ProcMopitt():
         self.map_lims = [26, 46, 126, 146, 4, 4]
         # --- 2d map for Krasnoyarsk
         self.map_lims = [40, 70, 70, 110, 10, 10]
+<<<<<<< HEAD
         # --- Krasnoyarsk locations
         self.krs_coor = [56, 92.5]
         # --- no Krasnoyarsk locations
@@ -171,6 +169,8 @@ class ProcMopitt():
         # --- plot
         f_name = self.plt_dir + 'CO_' + cdate
         plt_timser.plot_ts([pds_kr, pds_nk], pds_dif, ['r', 'k'], ['Krs', 'Not'], [], f_name)
+=======
+>>>>>>> 6472bc371869b34b7bb5b71993588e48b7db32c4
 
 
     # --- processing raw data
@@ -208,7 +208,7 @@ class ProcMopitt():
                         # --- if plot
                         if ifplot:
                             pname = self.plt_dir + 'MOPITT_' + cdate
-                            self.plot_map(h5_var, h5_lat, h5_lon, pname, cdate)
+                            self.plot_test_map(h5_var, h5_lat, h5_lon, pname, cdate)
 
                         # --- get file info
                         if info:
@@ -219,7 +219,7 @@ class ProcMopitt():
 
                 df = pd.concat(frames)
                 df.set_index('index', inplace=True)
-                pkf = self.mpt_m_dir + 'MOPITT_CO_' + cdate[:-2]
+                pkf = self.mpt_m_dir + 'MOPITT_xCO_' + cdate[:-2]
                 a_checkdir.check_dir(pkf)
                 df.to_pickle(pkf)
 
@@ -228,17 +228,11 @@ class ProcMopitt():
     def make_1d_df(self, h5_var, h5_lat, h5_lon, single_date):
 
         # --- df, ch4 in ppm
-        df = pd.DataFrame({'index': [single_date]*len(h5_var), 'CO, ppm': h5_var, 'lat': h5_lat, 'lon': h5_lon})
+        df = pd.DataFrame({'index': [single_date]*len(h5_var), 'xCO': h5_var, 'lat': h5_lat, 'lon': h5_lon})
         print('\t\tdf len:', len(df.index))
         # print(df.head())
 
         return df
-
-        # # --- to pickle
-        # pkf = self.mid_dir + 'MOPITTS-df/' + 'mpt_co'
-        # a_checkdir.check_dir(pkf)
-        # df.to_pickle(pkf)
-        # exit()
 
 
     # --- read h5 file
@@ -262,7 +256,7 @@ class ProcMopitt():
 
 
     # === plot map
-    def plot_map(self, var1d, lats, lons, pname, cdate, title=False):
+    def plot_test_map(self, var1d, lats, lons, pname, cdate, title=False):
         # --- Build Map ---
         fig = plt.figure()
         plt.rc('font', family='serif')
