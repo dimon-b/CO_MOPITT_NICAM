@@ -73,6 +73,7 @@ class DrwTmser():
                 cdate = str(sdate.strftime("%Y%m"))
 
                 pkf = self.mpt_m_dir + 'MOPITT_xCO_' + cdate
+                print(f'\tRead MOPITT df file:', pkf)
                 try:
                     df = pd.read_pickle(pkf)
 
@@ -89,7 +90,11 @@ class DrwTmser():
                                    (df['lon'] >= min_ln) & (df['lon'] <= max_ln)]
                         df_ct = df_ct.resample(rsm_time).mean()
 
-                        frames[st].append(df_ct['xCO'].values[0])
+                        try:
+                            frames[st].append(df_ct['xCO'].values[0])
+                        except:
+                            frames[st].append(np.nan)
+
                     index.append(df_ct.index[0])
 
                 except IOError:
@@ -101,7 +106,7 @@ class DrwTmser():
         for st in range(0, len(self.cts_coor)):
             labels.append(self.cts_coor[st][0])
             pd_ct = pd.Series(frames[st], index=index)
-            print(pd_ct)
+            #print(pd_ct)
             set_cts.append(pd_ct)
 
         # --- colors
@@ -109,7 +114,7 @@ class DrwTmser():
         set_dif = set_cts
 
         # --- plot
-        f_name = self.plt_dir + 'xCO_cites' + str(self.cts_lim) + 'grd'
+        f_name = self.plt_dir + 'xCO_cites_' + str(self.cts_lim) + 'grad'
         plt_lims = [[1.6e18, 3.2e18], []]
         plt_timser.plot_ts(set_cts, set_dif, colors, labels, plt_lims, f_name)
 

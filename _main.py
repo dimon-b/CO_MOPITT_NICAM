@@ -31,7 +31,7 @@ if __name__ == '__main__':
         obj = prc_MOPITT.ProcMopitt(case, years)
         obj.proc_raw()
 
-    # --- MOPITT raw
+    # --- MOPITT cites
     ts = 1
     if ts:
         print(f'\nTime series of MOPITT')

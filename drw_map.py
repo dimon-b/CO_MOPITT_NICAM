@@ -81,6 +81,7 @@ class DrwMap():
                 cdate = str(sdate.strftime("%Y%m"))
 
                 pkf = self.mpt_m_dir + 'MOPITT_xCO_' + cdate
+                print(f'\tRead MOPITT df file:', pkf)
                 try:
                     mpt_r = pd.read_pickle(pkf)
                 except IOError:
@@ -94,8 +95,8 @@ class DrwMap():
                 idx1 = (np.abs(self.map_lons - self.map_lims[3])).argmin() + 1
 
                 # --- domain limits on the grid
-                print(f'\t\t\tDomain limit indexes {idy0}, {idy1}, {idx0}, {idx1}')
-                print(f'\t\t\tDomain limit coordinates {self.map_lats[idy0]}, {self.map_lats[idy1]}, '
+                print(f'\t\tDomain limit indexes {idy0}, {idy1}, {idx0}, {idx1}')
+                print(f'\t\tDomain limit coordinates {self.map_lats[idy0]}, {self.map_lats[idy1]}, '
                       f'{self.map_lons[idx0]}, {self.map_lons[idx1]}')
 
                 # --- gridded arrays
@@ -123,7 +124,7 @@ class DrwMap():
 
                     # --- MOPITT
                     title = ''  # f'MOPITT CO'
-                    plot_name = self.plt_dir + 'grd_MOPITT_xCO_Sib_' + cdate[:6] + '_' + str(self.map_grid)
+                    plot_name = self.plt_dir + 'mp_MOPITT_xCO_Sib_' + cdate[:6] + '_' + str(self.map_grid) + 'grad'
                     print(f'\t\t\tMOPITT data min: {np.nanmin(grd_co):.2}, '
                           f'max: {np.nanmax(grd_co):.2}')
                     mask = 0
@@ -144,7 +145,7 @@ class DrwMap():
                     # --- MOPITT
                     g_s_ch4 = np.array((grd_co).flatten())
                     title = ''  # f'MOPITT CO'
-                    plot_name = self.plt_dir + 'scr_MOPITT_xCO_Sib_' + cdate[:6] + '_' + str(self.map_grid)
+                    plot_name = self.plt_dir + 'sc_MOPITT_xCO_Sib_' + cdate[:6] + '_' + str(self.map_grid) + 'grad'
                     print(f'\t\t\tMOPITT data min: {np.nanmin(g_s_ch4):.2}, max {np.nanmax(g_s_ch4):.2}')
                     plt_map.plot_map_sc(g_s_ch4, lats, lons, self.map_lims,
                                         var_lims, plot_name, title, sites)

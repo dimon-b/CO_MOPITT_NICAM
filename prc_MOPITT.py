@@ -62,7 +62,7 @@ class ProcMopitt():
 
                     # --- dates
                     cdate = str(single_date.strftime("%Y%m%d"))
-                    print(f'\tRead MOPITT for:', cdate)
+                    print(f'\tRead MOPITT h5 for:', cdate)
 
                     # --- read file
                     fname = self.mpt_r_dir + 'MOP02J-' + cdate + '-L2V16.2.3.he5'
