@@ -9,6 +9,7 @@ Project    CO
 import a_esttime
 import set_case
 import prc_MOPITT
+import drw_map
 
 # === main
 if __name__ == '__main__':
@@ -22,12 +23,21 @@ if __name__ == '__main__':
     case = set_case.SetCase()
 
     # --- MOPITT
-    print(f'\nProcess MOPITT')
-    years = [2015, 2016]
-    obj = prc_MOPITT.ProcMopitt(case, years)
-    #obj.proc_raw()
-    obj.proc_df()
+    rd = 1
+    if rd:
+        print(f'\nProcess MOPITT')
+        years = [2013, 2016]
+        obj = prc_MOPITT.ProcMopitt(case, years)
+        #obj.proc_raw()
+        obj.proc_cts()
 
+    # --- MOPITT map
+    mp = 0
+    if mp:
+        print(f'\nMap MOPITT')
+        years = [2015, 2016]
+        obj = drw_map.DrwMap(case, years)
+        obj.map_co()
 
     # --- time end
     led = a_esttime.a_esttime(led)
