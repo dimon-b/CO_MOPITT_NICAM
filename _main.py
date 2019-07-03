@@ -10,6 +10,7 @@ import a_esttime
 import set_case
 import prc_MOPITT
 import drw_map
+import drw_timeser
 
 # === main
 if __name__ == '__main__':
@@ -22,17 +23,24 @@ if __name__ == '__main__':
     print(f'\nSet settings')
     case = set_case.SetCase()
 
-    # --- MOPITT
+    # --- MOPITT raw
     rd = 0
     if rd:
-        print(f'\nProcess MOPITT')
-        years = [2015, 2016]
+        print(f'\nProcessing h5 MOPITT files')
+        years = [2009, 2016]
         obj = prc_MOPITT.ProcMopitt(case, years)
-        #obj.proc_raw()
+        obj.proc_raw()
+
+    # --- MOPITT raw
+    ts = 1
+    if ts:
+        print(f'\nTime series of MOPITT')
+        years = [2015, 2016]
+        obj = drw_timeser.DrwTmser(case, years)
         obj.proc_cts()
 
     # --- MOPITT map
-    mp = 1
+    mp = 0
     if mp:
         print(f'\nMap MOPITT')
         years = [2015, 2016]

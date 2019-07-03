@@ -37,9 +37,9 @@ class DrwMap():
         self.map_nlat = len(self.map_lats)
         self.map_nlon = len(self.map_lons)
 
-        self.var_lims_1d = [1.4e18, 1.6e18, 1.8e18, 2.0e18, 2.2e18, 2.4e18, 2.6e18, 2.8e18]
+        self.var_lims_1d = [1.2e18, 1.4e18, 1.6e18, 1.8e18, 2.0e18, 2.2e18, 2.4e18, 2.6e18, 2.8e18]
 
-        self.var_lims_2d = [1.4e18, 2.8e18, 0.2e18]
+        self.var_lims_2d = [1.2e18, 2.8e18, 0.2e18]
 
         # --- 2d map for Siberia
         self.map_lims = [50, 70.0, 75, 115.0, 10, 10]
@@ -51,8 +51,6 @@ class DrwMap():
             ['KEM', 55.4, 86.1],
             ['NKZ', 53.8, 87.1],
             ['BRN', 53.3, 83.8],
-            # ['CHB', 55.2, 61.4],
-            # ['EKT', 56.8, 60.6],
             ['BRT', 56.1, 101.6],
             ['IRK', 52.3, 104.3],
             ['KRS', 56.0, 92.9],
@@ -60,6 +58,8 @@ class DrwMap():
             ['NVY', 66.1, 76.7],
             ['ULU', 51.8, 107.6],
             ['NRL', 69.3, 88.2],
+            # ['CHB', 55.2, 61.4],
+            # ['EKT', 56.8, 60.6],
         ]
 
 
@@ -80,7 +80,7 @@ class DrwMap():
                 sdate = datetime.datetime(yr, mn + 1, 1, 0, 0)
                 cdate = str(sdate.strftime("%Y%m"))
 
-                pkf = self.mpt_m_dir + 'MOPITT_CO_' + cdate
+                pkf = self.mpt_m_dir + 'MOPITT_xCO_' + cdate
                 try:
                     mpt_r = pd.read_pickle(pkf)
                 except IOError:
@@ -123,7 +123,7 @@ class DrwMap():
 
                     # --- MOPITT
                     title = ''  # f'MOPITT CO'
-                    plot_name = self.plt_dir + 'grd_MOPITT_Sib_' + cdate[:6] + '_' + str(self.map_grid)
+                    plot_name = self.plt_dir + 'grd_MOPITT_xCO_Sib_' + cdate[:6] + '_' + str(self.map_grid)
                     print(f'\t\t\tMOPITT data min: {np.nanmin(grd_co):.2}, '
                           f'max: {np.nanmax(grd_co):.2}')
                     mask = 0
@@ -144,7 +144,7 @@ class DrwMap():
                     # --- MOPITT
                     g_s_ch4 = np.array((grd_co).flatten())
                     title = ''  # f'MOPITT CO'
-                    plot_name = self.plt_dir + 'scr_MOPITT_Sib_' + cdate[:6] + '_' + str(self.map_grid)
+                    plot_name = self.plt_dir + 'scr_MOPITT_xCO_Sib_' + cdate[:6] + '_' + str(self.map_grid)
                     print(f'\t\t\tMOPITT data min: {np.nanmin(g_s_ch4):.2}, max {np.nanmax(g_s_ch4):.2}')
                     plt_map.plot_map_sc(g_s_ch4, lats, lons, self.map_lims,
                                         var_lims, plot_name, title, sites)
