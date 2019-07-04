@@ -42,7 +42,8 @@ class DrwMap():
         self.var_lims_2d = [1.2e18, 2.8e18, 0.2e18]
 
         # --- 2d map for Siberia
-        self.map_lims = [50, 70.0, 75, 115.0, 10, 10]
+        self.map_lims = ['Sib', 0, 80.0, 0, 180.0, 30, 30]
+        self.map_lims = ['SAE', 50, 70.0, 75, 115.0, 10, 10]
 
         # --- cities
         self.cts_coor = [
@@ -58,10 +59,8 @@ class DrwMap():
             ['NVY', 66.1, 76.7],
             ['ULU', 51.8, 107.6],
             ['NRL', 69.3, 88.2],
-            # ['CHB', 55.2, 61.4],
-            # ['EKT', 56.8, 60.6],
         ]
-
+        self.cts_coor = []
 
     # === map
     def map_co(self):
@@ -89,10 +88,10 @@ class DrwMap():
                     exit()
 
                 # --- indexes for domain
-                idy0 = (np.abs(self.map_lats - self.map_lims[0])).argmin() - 1
-                idy1 = (np.abs(self.map_lats - self.map_lims[1])).argmin() + 1
-                idx0 = (np.abs(self.map_lons - self.map_lims[2])).argmin() - 1
-                idx1 = (np.abs(self.map_lons - self.map_lims[3])).argmin() + 1
+                idy0 = (np.abs(self.map_lats - self.map_lims[1])).argmin() - 1
+                idy1 = (np.abs(self.map_lats - self.map_lims[2])).argmin() + 1
+                idx0 = (np.abs(self.map_lons - self.map_lims[3])).argmin() - 1
+                idx1 = (np.abs(self.map_lons - self.map_lims[4])).argmin() + 1
 
                 # --- domain limits on the grid
                 print(f'\t\tDomain limit indexes {idy0}, {idy1}, {idx0}, {idx1}')
@@ -124,11 +123,12 @@ class DrwMap():
 
                     # --- MOPITT
                     title = ''  # f'MOPITT CO'
-                    plot_name = self.plt_dir + 'mp_MOPITT_xCO_Sib_' + cdate[:6] + '_' + str(self.map_grid) + 'grad'
+                    plot_name = self.plt_dir + 'mp_MOPITT_xCO_' + self.map_lims + '_' + cdate[:6] + '_' + \
+                                str(self.map_grid) + 'grad'
                     print(f'\t\t\tMOPITT data min: {np.nanmin(grd_co):.2}, '
                           f'max: {np.nanmax(grd_co):.2}')
                     mask = 0
-                    plt_map.plot_map_int(grd_co, mask, self.map_lats, self.map_lons, self.map_lims,
+                    plt_map.plot_map_int(grd_co, mask, self.map_lats, self.map_lons, self.map_lims[1:],
                                          var_lims, plot_name, title, sites)
 
                 # --- scatter plot
@@ -145,7 +145,8 @@ class DrwMap():
                     # --- MOPITT
                     g_s_ch4 = np.array((grd_co).flatten())
                     title = ''  # f'MOPITT CO'
-                    plot_name = self.plt_dir + 'sc_MOPITT_xCO_Sib_' + cdate[:6] + '_' + str(self.map_grid) + 'grad'
+                    plot_name = self.plt_dir + 'sc_MOPITT_xCO_' + self.map_lims + '_' + cdate[:6] + '_' + \
+                                str(self.map_grid) + 'grad'
                     print(f'\t\t\tMOPITT data min: {np.nanmin(g_s_ch4):.2}, max {np.nanmax(g_s_ch4):.2}')
-                    plt_map.plot_map_sc(g_s_ch4, lats, lons, self.map_lims,
+                    plt_map.plot_map_sc(g_s_ch4, lats, lons, self.map_lims[1:],
                                         var_lims, plot_name, title, sites)
