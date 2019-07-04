@@ -23,27 +23,19 @@ if __name__ == '__main__':
     print(f'\nSet settings')
     case = set_case.SetCase()
 
-<<<<<<< HEAD
-    # --- MOPITT
-    rd = 1
-    if rd:
-        print(f'\nProcess MOPITT')
-        years = [2013, 2016]
-=======
     # --- MOPITT raw
     rd = 0
     if rd:
         print(f'\nProcessing h5 MOPITT files')
-        years = [2009, 2016]
->>>>>>> 6472bc371869b34b7bb5b71993588e48b7db32c4
+        years = [2009, 2010]
         obj = prc_MOPITT.ProcMopitt(case, years)
         obj.proc_raw()
 
-    # --- MOPITT raw
+    # --- MOPITT cites
     ts = 1
     if ts:
         print(f'\nTime series of MOPITT')
-        years = [2015, 2016]
+        years = [2009, 2016]
         obj = drw_timeser.DrwTmser(case, years)
         obj.proc_cts()
 

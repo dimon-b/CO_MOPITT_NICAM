@@ -52,7 +52,7 @@ class DrwTmser():
             # ['EKT', 56.8, 60.6],
             # ['BRN', 53.3, 83.8],
         ]
-        self.cts_lim = 1
+        self.cts_lim = 0.5
 
 
     # --- processing for cities
@@ -73,10 +73,11 @@ class DrwTmser():
                 cdate = str(sdate.strftime("%Y%m"))
 
                 pkf = self.mpt_m_dir + 'MOPITT_xCO_' + cdate
+                print(f'\tRead MOPITT df file:', pkf)
                 try:
                     df = pd.read_pickle(pkf)
 
-                    # --- city
+                    # --- append city xCO
                     set_cts = []
                     for st in range(0, len(self.cts_coor)):
                         min_lt = self.cts_coor[st][1] - self.cts_lim/2.
@@ -89,8 +90,18 @@ class DrwTmser():
                                    (df['lon'] >= min_ln) & (df['lon'] <= max_ln)]
                         df_ct = df_ct.resample(rsm_time).mean()
 
-                        frames[st].append(df_ct['xCO'].values[0])
-                    index.append(df_ct.index[0])
+                        try:
+                            frames[st].append(df_ct['xCO'].values[0])
+                        except: 
+                            frames[st].append(np.nan)
+                            print("\t\tCould not append xCO for:", cdate, st)
+
+                    # --- append index
+                    try:
+                        index.append(df_ct.index[0])
+                    except: 
+                        index.append(np.nan)
+                        print("\t\tCould not append index for:", cdate)
 
                 except IOError:
                     print("\t\tCould not read file:", pkf)
@@ -101,7 +112,6 @@ class DrwTmser():
         for st in range(0, len(self.cts_coor)):
             labels.append(self.cts_coor[st][0])
             pd_ct = pd.Series(frames[st], index=index)
-            print(pd_ct)
             set_cts.append(pd_ct)
 
         # --- colors
@@ -109,7 +119,7 @@ class DrwTmser():
         set_dif = set_cts
 
         # --- plot
-        f_name = self.plt_dir + 'xCO_cites' + str(self.cts_lim) + 'grd'
+        f_name = self.plt_dir + 'xCO_cites_' + str(self.cts_lim) + 'grad'
         plt_lims = [[1.6e18, 3.2e18], []]
         plt_timser.plot_ts(set_cts, set_dif, colors, labels, plt_lims, f_name)
 

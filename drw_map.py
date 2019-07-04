@@ -123,11 +123,7 @@ class DrwMap():
 
                     # --- MOPITT
                     title = ''  # f'MOPITT CO'
-<<<<<<< HEAD
-                    plot_name = self.plt_dir + 'grd_MOPITT_Sib_' + cdate[:6] + '_' + str(self.map_grid) + 'grad'
-=======
-                    plot_name = self.plt_dir + 'grd_MOPITT_xCO_Sib_' + cdate[:6] + '_' + str(self.map_grid)
->>>>>>> 6472bc371869b34b7bb5b71993588e48b7db32c4
+                    plot_name = self.plt_dir + 'mp_MOPITT_xCO_Sib_' + cdate[:6] + '_' + str(self.map_grid) + 'grad'
                     print(f'\t\t\tMOPITT data min: {np.nanmin(grd_co):.2}, '
                           f'max: {np.nanmax(grd_co):.2}')
                     mask = 0
@@ -148,11 +144,7 @@ class DrwMap():
                     # --- MOPITT
                     g_s_ch4 = np.array((grd_co).flatten())
                     title = ''  # f'MOPITT CO'
-<<<<<<< HEAD
-                    plot_name = self.plt_dir + 'scr_MOPITT_Sib_' + cdate[:6] + '_' + str(self.map_grid) + 'grad'
-=======
-                    plot_name = self.plt_dir + 'scr_MOPITT_xCO_Sib_' + cdate[:6] + '_' + str(self.map_grid)
->>>>>>> 6472bc371869b34b7bb5b71993588e48b7db32c4
+                    plot_name = self.plt_dir + 'sc_MOPITT_xCO_Sib_' + cdate[:6] + '_' + str(self.map_grid) + 'grad'
                     print(f'\t\t\tMOPITT data min: {np.nanmin(g_s_ch4):.2}, max {np.nanmax(g_s_ch4):.2}')
                     plt_map.plot_map_sc(g_s_ch4, lats, lons, self.map_lims,
                                         var_lims, plot_name, title, sites)
