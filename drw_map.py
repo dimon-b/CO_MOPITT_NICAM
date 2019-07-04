@@ -81,6 +81,7 @@ class DrwMap():
                 cdate = str(sdate.strftime("%Y%m"))
 
                 pkf = self.mpt_m_dir + 'MOPITT_xCO_' + cdate
+                print(f'\tRead MOPITT df file:', pkf)
                 try:
                     mpt_r = pd.read_pickle(pkf)
                 except IOError:
@@ -94,8 +95,8 @@ class DrwMap():
                 idx1 = (np.abs(self.map_lons - self.map_lims[3])).argmin() + 1
 
                 # --- domain limits on the grid
-                print(f'\t\t\tDomain limit indexes {idy0}, {idy1}, {idx0}, {idx1}')
-                print(f'\t\t\tDomain limit coordinates {self.map_lats[idy0]}, {self.map_lats[idy1]}, '
+                print(f'\t\tDomain limit indexes {idy0}, {idy1}, {idx0}, {idx1}')
+                print(f'\t\tDomain limit coordinates {self.map_lats[idy0]}, {self.map_lats[idy1]}, '
                       f'{self.map_lons[idx0]}, {self.map_lons[idx1]}')
 
                 # --- gridded arrays

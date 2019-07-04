@@ -90,16 +90,17 @@ class DrwTmser():
                                    (df['lon'] >= min_ln) & (df['lon'] <= max_ln)]
                         df_ct = df_ct.resample(rsm_time).mean()
 
+                        # --- append xCO
                         try:
                             frames[st].append(df_ct['xCO'].values[0])
-                        except: 
+                        except:
                             frames[st].append(np.nan)
                             print("\t\tCould not append xCO for:", cdate, st)
 
                     # --- append index
                     try:
                         index.append(df_ct.index[0])
-                    except: 
+                    except:
                         index.append(np.nan)
                         print("\t\tCould not append index for:", cdate)
 
