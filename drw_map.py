@@ -31,7 +31,7 @@ class DrwMap():
         self.months = case.months
 
         # --- map grid
-        self.map_grid = 0.5 #0.25
+        self.map_grid = 3 #0.25
         self.map_lats = np.arange(-90, 90, self.map_grid)
         self.map_lons = np.arange(0, 360, self.map_grid)
         self.map_nlat = len(self.map_lats)
@@ -39,11 +39,11 @@ class DrwMap():
 
         self.var_lims_1d = [1.2e18, 1.4e18, 1.6e18, 1.8e18, 2.0e18, 2.2e18, 2.4e18, 2.6e18, 2.8e18]
 
-        self.var_lims_2d = [1.2e18, 2.8e18, 0.2e18]
+        self.var_lims_2d = [1.0e18, 3.5e18, 0.5e18]
 
         # --- 2d map for Siberia
-        self.map_lims = ['Sib', 0, 80.0, 0, 180.0, 30, 30]
-        self.map_lims = ['SAE', 50, 70.0, 75, 115.0, 10, 10]
+        self.map_lims = ['Sib', 50, 70.0, 75, 115.0, 10, 10]
+        self.map_lims = ['SAE', 0, 40.0, 60, 150.0, 10, 15]
 
         # --- cities
         self.cts_coor = [
@@ -123,7 +123,7 @@ class DrwMap():
 
                     # --- MOPITT
                     title = ''  # f'MOPITT CO'
-                    plot_name = self.plt_dir + 'mp_MOPITT_xCO_' + self.map_lims + '_' + cdate[:6] + '_' + \
+                    plot_name = self.plt_dir + 'mp_MOPITT_xCO_' + self.map_lims[0] + '_' + cdate[:6] + '_' + \
                                 str(self.map_grid) + 'grad'
                     print(f'\t\t\tMOPITT data min: {np.nanmin(grd_co):.2}, '
                           f'max: {np.nanmax(grd_co):.2}')
@@ -145,7 +145,7 @@ class DrwMap():
                     # --- MOPITT
                     g_s_ch4 = np.array((grd_co).flatten())
                     title = ''  # f'MOPITT CO'
-                    plot_name = self.plt_dir + 'sc_MOPITT_xCO_' + self.map_lims + '_' + cdate[:6] + '_' + \
+                    plot_name = self.plt_dir + 'sc_MOPITT_xCO_' + self.map_lims[0] + '_' + cdate[:6] + '_' + \
                                 str(self.map_grid) + 'grad'
                     print(f'\t\t\tMOPITT data min: {np.nanmin(g_s_ch4):.2}, max {np.nanmax(g_s_ch4):.2}')
                     plt_map.plot_map_sc(g_s_ch4, lats, lons, self.map_lims[1:],

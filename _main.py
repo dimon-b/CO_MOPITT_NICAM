@@ -32,7 +32,7 @@ if __name__ == '__main__':
         obj.proc_raw()
 
     # --- MOPITT cites
-    ts = 1
+    ts = 0
     if ts:
         print(f'\nTime series of MOPITT')
         years = [2009, 2016]
@@ -40,7 +40,7 @@ if __name__ == '__main__':
         obj.proc_cts()
 
     # --- MOPITT map
-    mp = 0
+    mp = 1
     if mp:
         print(f'\nMap MOPITT')
         years = [2015, 2016]
